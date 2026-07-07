@@ -11,14 +11,18 @@ import {
   Empty,
   Badge,
   Space,
+  Button,
+  Tooltip,
 } from "antd";
 import {
   SearchOutlined,
   BookOutlined,
   UserOutlined,
   BarcodeOutlined,
+  SendOutlined,
 } from "@ant-design/icons";
 import { useGetAllBooksQuery } from "../redux/features/book/bookApi.js";
+import { toast } from "sonner";
 
 const { Title, Text } = Typography;
 const { Meta } = Card;
@@ -27,6 +31,7 @@ const BookCatalog = () => {
   const { data, isLoading } = useGetAllBooksQuery();
   const [searchText, setSearchText] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [reservingId, setReservingId] = useState(null);
 
   const books = data?.data || [];
 
@@ -51,6 +56,18 @@ const BookCatalog = () => {
       return matchesSearch && matchesCategory;
     });
   }, [books, searchText, selectedCategory]);
+
+  const handleReserve = async (bookId) => {
+    setReservingId(bookId);
+    try {
+      // Will be wired to RTK Query mutation in next commit
+      toast.info("Reservation feature connecting...");
+    } catch (err) {
+      toast.error(err?.data?.message || "Failed to reserve book");
+    } finally {
+      setReservingId(null);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -130,7 +147,10 @@ const BookCatalog = () => {
                     height: "100%",
                     borderRadius: 10,
                     overflow: "hidden",
+                    display: "flex",
+                    flexDirection: "column",
                   }}
+                  styles={{ body: { flex: 1, display: "flex", flexDirection: "column" } }}
                 >
                   {/* Book Icon Header */}
                   <div
@@ -147,39 +167,70 @@ const BookCatalog = () => {
                     />
                   </div>
 
-                  <Meta
-                    title={
-                      <Text
-                        strong
-                        ellipsis={{ tooltip: book.title }}
-                        style={{ fontSize: 16 }}
-                      >
-                        {book.title}
-                      </Text>
-                    }
-                    description={
-                      <Space direction="vertical" size={6} style={{ width: "100%" }}>
-                        <Text type="secondary">
-                          <UserOutlined style={{ marginRight: 6 }} />
-                          {book.author}
+                  <div style={{ flex: 1 }}>
+                    <Meta
+                      title={
+                        <Text
+                          strong
+                          ellipsis={{ tooltip: book.title }}
+                          style={{ fontSize: 16 }}
+                        >
+                          {book.title}
                         </Text>
-
-                        {book.isbn && (
-                          <Text type="secondary" style={{ fontSize: 12 }}>
-                            <BarcodeOutlined style={{ marginRight: 6 }} />
-                            {book.isbn}
+                      }
+                      description={
+                        <Space direction="vertical" size={6} style={{ width: "100%" }}>
+                          <Text type="secondary">
+                            <UserOutlined style={{ marginRight: 6 }} />
+                            {book.author}
                           </Text>
-                        )}
 
-                        <div style={{ marginTop: 8 }}>
-                          {book.category && (
-                            <Tag color="blue">{book.category}</Tag>
+                          {book.isbn && (
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                              <BarcodeOutlined style={{ marginRight: 6 }} />
+                              {book.isbn}
+                            </Text>
                           )}
-                          <Tag color="default">Qty: {book.quantity ?? 0}</Tag>
-                        </div>
-                      </Space>
-                    }
-                  />
+
+                          <div style={{ marginTop: 8 }}>
+                            {book.category && (
+                              <Tag color="blue">{book.category}</Tag>
+                            )}
+                            <Tag color="default">Qty: {book.quantity ?? 0}</Tag>
+                          </div>
+                        </Space>
+                      }
+                    />
+                  </div>
+
+                  {/* Reserve Button */}
+                  <div style={{ marginTop: 16 }}>
+                    <Tooltip
+                      title={
+                        !book.is_available
+                          ? "This book is currently unavailable"
+                          : "Submit a reservation request"
+                      }
+                    >
+                      <Button
+                        type="primary"
+                        icon={<SendOutlined />}
+                        block
+                        disabled={!book.is_available}
+                        loading={reservingId === book.id}
+                        onClick={() => handleReserve(book.id)}
+                        style={{
+                          borderRadius: 6,
+                          background: book.is_available
+                            ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                            : undefined,
+                          border: "none",
+                        }}
+                      >
+                        Reserve
+                      </Button>
+                    </Tooltip>
+                  </div>
                 </Card>
               </Badge.Ribbon>
             </Col>
