@@ -48,7 +48,7 @@ const baseQueryWithRefreshToken = async (args, api, extraOptions) => {
 export const baseApi = createApi({
   reducerPath: "baseApi",
   baseQuery: baseQueryWithRefreshToken,
-  tagTypes: ["semester", "courses", "books"],
+  tagTypes: ["semester", "courses", "books", "reservations"],
 
   endpoints: () => ({}),
 });

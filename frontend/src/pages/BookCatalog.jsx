@@ -22,6 +22,7 @@ import {
   SendOutlined,
 } from "@ant-design/icons";
 import { useGetAllBooksQuery } from "../redux/features/book/bookApi.js";
+import { useCreateReservationMutation } from "../redux/features/reservation/reservationApi.js";
 import { toast } from "sonner";
 
 const { Title, Text } = Typography;
@@ -32,6 +33,7 @@ const BookCatalog = () => {
   const [searchText, setSearchText] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [reservingId, setReservingId] = useState(null);
+  const [createReservation] = useCreateReservationMutation();
 
   const books = data?.data || [];
 
@@ -60,8 +62,8 @@ const BookCatalog = () => {
   const handleReserve = async (bookId) => {
     setReservingId(bookId);
     try {
-      // Will be wired to RTK Query mutation in next commit
-      toast.info("Reservation feature connecting...");
+      await createReservation({ bookId }).unwrap();
+      toast.success("Reservation submitted successfully!");
     } catch (err) {
       toast.error(err?.data?.message || "Failed to reserve book");
     } finally {
