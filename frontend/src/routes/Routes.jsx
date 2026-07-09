@@ -8,20 +8,24 @@ import BookCatalog from "../pages/BookCatalog.jsx";
 import BookInventory from "../pages/BookInventory.jsx";
 import MainLayout from "../components/layout/MainLayout.jsx";
 import { routeGenerator } from "../utils/routesGenerator.js";
+import NotFound from "../pages/NotFound.jsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
+    errorElement: <NotFound />,
   },
   {
     path: "/admin",
     element: <App />,
+    errorElement: <NotFound />,
     children: routeGenerator(adminPaths),
   },
   {
     path: "/student",
     element: <App />,
+    errorElement: <NotFound />,
     children: routeGenerator(studentPaths),
   },
   {
@@ -45,6 +49,10 @@ const router = createBrowserRouter([
         element: <BookInventory />,
       },
     ],
+  },
+  {
+    path: "*",
+    element: <NotFound />,
   },
 ]);
 
