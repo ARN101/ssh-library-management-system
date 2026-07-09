@@ -17,6 +17,13 @@ export const reservationApi = baseApi.injectEndpoints({
       }),
       providesTags: ["reservations"],
     }),
+    getMyReservations: builder.query({
+      query: () => ({
+        url: "/reservations/my",
+        method: "GET",
+      }),
+      providesTags: ["reservations"],
+    }),
     updateReservationStatus: builder.mutation({
       query: ({ id, status }) => ({
         url: `/reservations/${id}/status`,
@@ -31,5 +38,6 @@ export const reservationApi = baseApi.injectEndpoints({
 export const {
   useCreateReservationMutation,
   useGetAllReservationsQuery,
+  useGetMyReservationsQuery,
   useUpdateReservationStatusMutation,
 } = reservationApi;

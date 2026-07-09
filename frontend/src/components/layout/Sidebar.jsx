@@ -39,6 +39,11 @@ const Sidebar = () => {
             icon: <ReadOutlined />,
             label: "Book Catalog",
           },
+          {
+            key: "/student/my-reservations",
+            icon: <ScheduleOutlined />,
+            label: "My Reservations",
+          },
         ];
 
   const handleMenuClick = ({ key }) => {
