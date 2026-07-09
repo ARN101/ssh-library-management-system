@@ -6,6 +6,8 @@ import {
   BookOutlined,
   AppstoreOutlined,
   ReadOutlined,
+  ScheduleOutlined,
+  CoffeeOutlined,
 } from "@ant-design/icons";
 
 const { Sider } = Layout;
@@ -32,6 +34,16 @@ const Sidebar = () => {
             key: "/student/book-catalog",
             icon: <ReadOutlined />,
             label: "Book Catalog",
+          },
+          {
+            key: "/student/my-reservations",
+            icon: <ScheduleOutlined />,
+            label: "My Reservations",
+          },
+          {
+            key: "/student/reading-room",
+            icon: <CoffeeOutlined />,
+            label: "Reading Room",
           },
         ];
 
