@@ -19,23 +19,27 @@ const Sidebar = () => {
   const role = user?.role || "student";
 
   // Build menu items based on user role
-  const menuItems = [
-    {
-      key: "/admin/book-inventory",
-      icon: <AppstoreOutlined />,
-      label: "Book Inventory",
-    },
-    {
-      key: "/admin/reservations",
-      icon: <ScheduleOutlined />,
-      label: "Reservations",
-    },
-    {
-      key: "/student/book-catalog",
-      icon: <ReadOutlined />,
-      label: "Book Catalog",
-    },
-  ];
+  const menuItems =
+    role === "librarian"
+      ? [
+          {
+            key: "/admin/book-inventory",
+            icon: <AppstoreOutlined />,
+            label: "Book Inventory",
+          },
+          {
+            key: "/admin/reservations",
+            icon: <ScheduleOutlined />,
+            label: "Reservations",
+          },
+        ]
+      : [
+          {
+            key: "/student/book-catalog",
+            icon: <ReadOutlined />,
+            label: "Book Catalog",
+          },
+        ];
 
   const handleMenuClick = ({ key }) => {
     navigate(key);
