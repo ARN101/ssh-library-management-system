@@ -4,7 +4,7 @@ Run after `backend` and `frontend` dev servers are up and `db/schema.sql` is imp
 
 ## Prerequisites
 
-- Backend: `cd backend && npm run dev` (port 5000)
+- Backend: `cd backend && npm run dev` (port 5001)
 - Frontend: `cd frontend && npm run dev` (port 5173)
 - Demo librarian: `librarian@kuet.ac.bd` / `admin123`
 
@@ -48,10 +48,10 @@ Run after `backend` and `frontend` dev servers are up and `db/schema.sql` is imp
 
 ```bash
 # Health
-curl http://localhost:5000/api/health
+curl http://localhost:5001/api/health
 
 # Login
-curl -X POST http://localhost:5000/api/auth/login \
+curl -X POST http://localhost:5001/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"librarian@kuet.ac.bd","password":"admin123"}'
 ```
