@@ -28,7 +28,7 @@ const updateSeatStatus = async (req, res) => {
     }
 
     const [seats] = await db.query('SELECT * FROM seats WHERE id = ? LIMIT 1', [id]);
-    
+
     if (seats.length === 0) {
       return res.status(404).json({ message: 'Seat not found' });
     }
@@ -40,7 +40,7 @@ const updateSeatStatus = async (req, res) => {
         return res.status(400).json({ message: 'Seat is already taken' });
       }
 
-      // Optional: Check if user already has a seat
+      // Check if user already has a seat booked
       const [userSeats] = await db.query('SELECT id FROM seats WHERE user_id = ? LIMIT 1', [userId]);
       if (userSeats.length > 0) {
         return res.status(400).json({ message: 'You already have a seat booked. Please free it first.' });

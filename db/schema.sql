@@ -37,12 +37,6 @@ CREATE TABLE IF NOT EXISTS reservations (
     FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE
 );
 
--- Insert demo librarian user (password: admin123)
--- In production, the password hash should be bcrypt
-INSERT INTO users (kuet_mail, password_hash, full_name, student_id, role)
-VALUES ('librarian@kuet.ac.bd', '$2b$10$wB50.7cRz1r2Z6t.8P2YI.rM/sLd2vM.F8v8Lw0rF2n1J4Yp2y5m.', 'SSH Librarian', '0000000', 'librarian')
-ON DUPLICATE KEY UPDATE id=id;
-
 -- 4. Seats Table (Reading Room)
 CREATE TABLE IF NOT EXISTS seats (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -53,8 +47,13 @@ CREATE TABLE IF NOT EXISTS seats (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
--- Generate initial seats if they don't exist
-INSERT IGNORE INTO seats (seat_number) VALUES 
+-- Insert demo librarian user (password: admin123)
+INSERT INTO users (kuet_mail, password_hash, full_name, student_id, role)
+VALUES ('librarian@kuet.ac.bd', '$2b$10$wB50.7cRz1r2Z6t.8P2YI.rM/sLd2vM.F8v8Lw0rF2n1J4Yp2y5m.', 'SSH Librarian', '0000000', 'librarian')
+ON DUPLICATE KEY UPDATE id=id;
+
+-- Generate initial reading room seats if they don't exist
+INSERT IGNORE INTO seats (seat_number) VALUES
 ('A1'), ('A2'), ('A3'), ('A4'), ('A5'), ('A6'),
 ('B1'), ('B2'), ('B3'), ('B4'), ('B5'), ('B6'),
 ('C1'), ('C2'), ('C3'), ('C4'), ('C5'), ('C6'),
