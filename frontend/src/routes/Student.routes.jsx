@@ -1,5 +1,6 @@
 import BookCatalog from "../pages/BookCatalog.jsx";
 import MyReservations from "../pages/MyReservations.jsx";
+import ReadingRoom from "../pages/ReadingRoom.jsx";
 
 export const studentPaths = [
   {
@@ -12,4 +13,10 @@ export const studentPaths = [
     path: "my-reservations",
     element: <MyReservations />,
   },
+  {
+    name: "Reading Room",
+    path: "reading-room",
+    element: <ReadingRoom />,
+  },
 ];
+
