@@ -1,15 +1,37 @@
 const db = require('../config/db');
 
-// Fetch all seats and their current status
+// Fetch all seats and their current status (includes occupant for librarians)
 const getAllSeats = async (req, res) => {
   try {
     const [seats] = await db.query(
-      `SELECT id, seat_number, status, user_id 
-       FROM seats 
-       ORDER BY seat_number ASC`
+      `SELECT s.id, s.seat_number, s.status, s.user_id,
+              u.full_name AS user_name, u.student_id, u.kuet_mail AS user_email
+       FROM seats s
+       LEFT JOIN users u ON s.user_id = u.id
+       ORDER BY s.seat_number ASC`
     );
 
-    return res.status(200).json({ data: seats });
+    const isLibrarian = req.user?.role === 'librarian';
+
+    const data = seats.map((seat) => {
+      if (isLibrarian) {
+        return seat;
+      }
+
+      // Students only see occupant details for their own seat
+      if (Number(seat.user_id) === Number(req.user?.id)) {
+        return seat;
+      }
+
+      return {
+        id: seat.id,
+        seat_number: seat.seat_number,
+        status: seat.status,
+        user_id: seat.user_id,
+      };
+    });
+
+    return res.status(200).json({ data });
   } catch (error) {
     console.error('Get all seats error:', error.message);
     return res.status(500).json({ message: 'Internal server error' });

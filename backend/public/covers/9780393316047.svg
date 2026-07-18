@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="560" viewBox="0 0 400 560">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1677ff"/>
+      <stop offset="100%" stop-color="#0958d9"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="560" fill="url(#g)"/>
+  <rect x="24" y="24" width="352" height="512" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="2"/>
+  <text x="40" y="80" fill="rgba(255,255,255,0.85)" font-family="Georgia, serif" font-size="14">Physics</text>
+  <foreignObject x="40" y="140" width="320" height="220">
+    <div xmlns="http://www.w3.org/1999/xhtml" style="color:white;font-family:Georgia,serif;font-size:26px;font-weight:700;line-height:1.25;">
+      Surely You're Joking, Mr. Feynman!
+    </div>
+  </foreignObject>
+  <text x="40" y="480" fill="rgba(255,255,255,0.9)" font-family="Georgia, serif" font-size="16">Richard P. Feynman</text>
+  <text x="40" y="510" fill="rgba(255,255,255,0.65)" font-family="Arial, sans-serif" font-size="12">SSH Library</text>
+</svg>

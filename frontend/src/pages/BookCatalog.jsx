@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Input,
   Select,
@@ -23,27 +23,78 @@ import {
 } from "@ant-design/icons";
 import { useGetAllBooksQuery } from "../redux/features/book/bookApi.js";
 import { useCreateReservationMutation } from "../redux/features/reservation/reservationApi.js";
+import { resolveCoverSrc } from "../utils/coverUrl.js";
 import { toast } from "sonner";
 
 const { Title, Text } = Typography;
 const { Meta } = Card;
 
+const BookCover = ({ title, coverUrl }) => {
+  const [failed, setFailed] = useState(false);
+  const src = resolveCoverSrc(coverUrl);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [coverUrl]);
+
+  if (!src || failed) {
+    return (
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          minHeight: 220,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 8,
+          background: "linear-gradient(160deg, #1677ff 0%, #0958d9 100%)",
+          color: "#fff",
+          padding: 16,
+          textAlign: "center",
+        }}
+      >
+        <BookOutlined style={{ fontSize: 40 }} />
+        <span style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.3 }}>
+          {title}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      alt={`Cover of ${title}`}
+      src={src}
+      loading="lazy"
+      style={{
+        display: "block",
+        width: "100%",
+        height: 220,
+        objectFit: "cover",
+        background: "#e6f4ff",
+      }}
+      onError={() => setFailed(true)}
+    />
+  );
+};
+
 const BookCatalog = () => {
   const { data, isLoading } = useGetAllBooksQuery();
   const [searchText, setSearchText] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [availabilityFilter, setAvailabilityFilter] = useState("all");
   const [reservingId, setReservingId] = useState(null);
   const [createReservation] = useCreateReservationMutation();
 
   const books = data?.data || [];
 
-  // Extract unique categories for the filter dropdown
   const categories = useMemo(() => {
     const cats = [...new Set(books.map((b) => b.category).filter(Boolean))];
     return cats.sort();
   }, [books]);
 
-  // Filter books by search text and category
   const filteredBooks = useMemo(() => {
     return books.filter((book) => {
       const matchesSearch =
@@ -55,9 +106,14 @@ const BookCatalog = () => {
       const matchesCategory =
         selectedCategory === "all" || book.category === selectedCategory;
 
-      return matchesSearch && matchesCategory;
+      const matchesAvailability =
+        availabilityFilter === "all" ||
+        (availabilityFilter === "available" && book.is_available) ||
+        (availabilityFilter === "unavailable" && !book.is_available);
+
+      return matchesSearch && matchesCategory && matchesAvailability;
     });
-  }, [books, searchText, selectedCategory]);
+  }, [books, searchText, selectedCategory, availabilityFilter]);
 
   const handleReserve = async (bookId) => {
     setReservingId(bookId);
@@ -73,7 +129,14 @@ const BookCatalog = () => {
 
   if (isLoading) {
     return (
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 400 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: 400,
+        }}
+      >
         <Spin size="large" tip="Loading books..." />
       </div>
     );
@@ -81,18 +144,17 @@ const BookCatalog = () => {
 
   return (
     <div>
-      {/* Page Header */}
       <div style={{ marginBottom: 32 }}>
         <Title level={2} style={{ margin: 0, marginBottom: 4 }}>
           <BookOutlined style={{ marginRight: 10, color: "#1677ff" }} />
           Book Catalog
         </Title>
         <Text type="secondary">
-          Browse all available books in the SSH Library. Search by title, author, or ISBN.
+          Browse all available books in the SSH Library. Search by title,
+          author, or ISBN.
         </Text>
       </div>
 
-      {/* Search & Filter Bar */}
       <div
         style={{
           display: "flex",
@@ -114,22 +176,31 @@ const BookCatalog = () => {
           size="large"
           value={selectedCategory}
           onChange={setSelectedCategory}
-          style={{ minWidth: 200 }}
+          style={{ minWidth: 180 }}
           options={[
             { value: "all", label: "All Categories" },
             ...categories.map((cat) => ({ value: cat, label: cat })),
           ]}
         />
+        <Select
+          size="large"
+          value={availabilityFilter}
+          onChange={setAvailabilityFilter}
+          style={{ minWidth: 170 }}
+          options={[
+            { value: "all", label: "All Availability" },
+            { value: "available", label: "Available only" },
+            { value: "unavailable", label: "Unavailable only" },
+          ]}
+        />
       </div>
 
-      {/* Results Count */}
       <div style={{ marginBottom: 16 }}>
         <Text type="secondary">
           Showing {filteredBooks.length} of {books.length} books
         </Text>
       </div>
 
-      {/* Book Cards Grid */}
       {filteredBooks.length === 0 ? (
         <Empty
           description="No books found matching your search"
@@ -145,31 +216,35 @@ const BookCatalog = () => {
               >
                 <Card
                   hoverable
+                  styles={{
+                    body: {
+                      padding: 0,
+                      display: "flex",
+                      flexDirection: "column",
+                      height: "100%",
+                    },
+                  }}
                   style={{
                     height: "100%",
                     borderRadius: 10,
                     overflow: "hidden",
-                    display: "flex",
-                    flexDirection: "column",
                   }}
-                  styles={{ body: { flex: 1, display: "flex", flexDirection: "column" } }}
                 >
-                  {/* Book Icon Header */}
+                  {/* Cover is inside the body so it always paints (Ant Card cover + flex was unreliable) */}
                   <div
+                    data-testid="book-cover"
                     style={{
-                      textAlign: "center",
-                      padding: "20px 0 16px",
-                      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                      margin: "-24px -24px 20px -24px",
-                      borderRadius: "10px 10px 0 0",
+                      width: "100%",
+                      height: 220,
+                      overflow: "hidden",
+                      background: "#f0f5ff",
+                      borderBottom: "1px solid #f0f0f0",
                     }}
                   >
-                    <BookOutlined
-                      style={{ fontSize: 48, color: "rgba(255,255,255,0.9)" }}
-                    />
+                    <BookCover title={book.title} coverUrl={book.cover_url} />
                   </div>
 
-                  <div style={{ flex: 1 }}>
+                  <div style={{ padding: 16, flex: 1, display: "flex", flexDirection: "column" }}>
                     <Meta
                       title={
                         <Text
@@ -181,7 +256,11 @@ const BookCatalog = () => {
                         </Text>
                       }
                       description={
-                        <Space direction="vertical" size={6} style={{ width: "100%" }}>
+                        <Space
+                          direction="vertical"
+                          size={6}
+                          style={{ width: "100%" }}
+                        >
                           <Text type="secondary">
                             <UserOutlined style={{ marginRight: 6 }} />
                             {book.author}
@@ -203,35 +282,28 @@ const BookCatalog = () => {
                         </Space>
                       }
                     />
-                  </div>
 
-                  {/* Reserve Button */}
-                  <div style={{ marginTop: 16 }}>
-                    <Tooltip
-                      title={
-                        !book.is_available
-                          ? "This book is currently unavailable"
-                          : "Submit a reservation request"
-                      }
-                    >
-                      <Button
-                        type="primary"
-                        icon={<SendOutlined />}
-                        block
-                        disabled={!book.is_available}
-                        loading={reservingId === book.id}
-                        onClick={() => handleReserve(book.id)}
-                        style={{
-                          borderRadius: 6,
-                          background: book.is_available
-                            ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                            : undefined,
-                          border: "none",
-                        }}
+                    <div style={{ marginTop: 16 }}>
+                      <Tooltip
+                        title={
+                          !book.is_available
+                            ? "This book is currently unavailable"
+                            : "Submit a reservation request"
+                        }
                       >
-                        Reserve
-                      </Button>
-                    </Tooltip>
+                        <Button
+                          type="primary"
+                          icon={<SendOutlined />}
+                          block
+                          disabled={!book.is_available}
+                          loading={reservingId === book.id}
+                          onClick={() => handleReserve(book.id)}
+                          style={{ borderRadius: 6 }}
+                        >
+                          Reserve
+                        </Button>
+                      </Tooltip>
+                    </div>
                   </div>
                 </Card>
               </Badge.Ribbon>
