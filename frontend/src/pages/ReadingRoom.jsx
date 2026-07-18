@@ -22,7 +22,10 @@ const ReadingRoom = () => {
       if (seat.status === "available") {
         await updateSeat({ id: seat.id, action: "take" }).unwrap();
         toast.success(`Seat ${seat.seat_number} booked successfully!`);
-      } else if (seat.status === "taken" && seat.user_id === user?.id) {
+      } else if (
+        seat.status === "taken" &&
+        Number(seat.user_id) === Number(user?.id)
+      ) {
         await updateSeat({ id: seat.id, action: "free" }).unwrap();
         toast.success(`Seat ${seat.seat_number} freed successfully!`);
       } else {
@@ -44,7 +47,7 @@ const ReadingRoom = () => {
   // Calculate statistics
   const totalSeats = seats.length;
   const availableSeats = seats.filter(s => s.status === 'available').length;
-  const mySeat = seats.find(s => s.user_id === user?.id);
+  const mySeat = seats.find((s) => Number(s.user_id) === Number(user?.id));
 
   return (
     <div>
@@ -93,7 +96,7 @@ const ReadingRoom = () => {
         border: "1px solid #f0f0f0"
       }}>
         {seats.map((seat) => {
-          const isMine = seat.user_id === user?.id;
+          const isMine = Number(seat.user_id) === Number(user?.id);
           const isAvailable = seat.status === "available";
           
           let bgColor = "#ff4d4f"; // taken

@@ -1,6 +1,5 @@
 import { fetchBaseQuery, createApi } from "@reduxjs/toolkit/query/react";
 import { logOut, setUser } from "../features/auth/authSlice";
-import { toast } from "sonner";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: import.meta.env.VITE_BASE_URL,
@@ -19,23 +18,20 @@ const baseQuery = fetchBaseQuery({
 const baseQueryWithRefreshToken = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
 
-  if (result?.error?.status === 404) {
-    toast.error("User Not Found !!!", { duration: 2500 });
-  }
-
   if (result?.error?.status === 401) {
-    console.log("Sending refresh token");
-    const res = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/refresh-token`, {
-      method: "POST",
-      credentials: "include",
-    });
+    const res = await fetch(
+      `${import.meta.env.VITE_BASE_URL}/auth/refresh-token`,
+      {
+        method: "POST",
+        credentials: "include",
+      }
+    );
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
 
     if (data?.data?.accessToken) {
-      const user = api.getState().auth.user;
+      const user = data.data.user || api.getState().auth.user;
       api.dispatch(setUser({ user, token: data.data.accessToken }));
-
       result = await baseQuery(args, api, extraOptions);
     } else {
       api.dispatch(logOut());
@@ -48,7 +44,6 @@ const baseQueryWithRefreshToken = async (args, api, extraOptions) => {
 export const baseApi = createApi({
   reducerPath: "baseApi",
   baseQuery: baseQueryWithRefreshToken,
-  tagTypes: ["semester", "courses", "books", "reservations", "seats"],
-
+  tagTypes: ["books", "reservations", "seats"],
   endpoints: () => ({}),
 });

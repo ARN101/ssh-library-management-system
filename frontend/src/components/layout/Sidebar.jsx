@@ -8,6 +8,7 @@ import {
   ReadOutlined,
   ScheduleOutlined,
   CoffeeOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 
 const { Sider } = Layout;
@@ -32,6 +33,11 @@ const Sidebar = () => {
             key: "/admin/reservations",
             icon: <ScheduleOutlined />,
             label: "Reservations",
+          },
+          {
+            key: "/admin/seating-monitor",
+            icon: <EyeOutlined />,
+            label: "Seating Monitor",
           },
         ]
       : [

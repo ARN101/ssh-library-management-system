@@ -16,6 +16,7 @@ router.get('/my', authenticate, getMyReservations);
 
 // SSH-12 / SSH-14: Librarian reservation management
 router.get('/', authenticate, requireRole('librarian'), getAllReservations);
-router.patch('/:id/status', authenticate, requireRole('librarian'), updateReservationStatus);
+// Librarian: issue / return / cancel; student: cancel own pending only (enforced in controller)
+router.patch('/:id/status', authenticate, updateReservationStatus);
 
 module.exports = router;

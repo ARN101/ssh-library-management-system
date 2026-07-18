@@ -2,7 +2,7 @@
  * Lightweight API smoke test (SSH-16).
  * Usage: node scripts/smoke-test.js [baseUrl]
  */
-const baseUrl = process.argv[2] || 'http://localhost:5000';
+const baseUrl = process.argv[2] || 'http://localhost:5001';
 
 async function check(path, expectedStatus = 200) {
   const res = await fetch(`${baseUrl}${path}`);
