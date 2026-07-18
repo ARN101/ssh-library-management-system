@@ -12,10 +12,12 @@ Run after `backend` and `frontend` dev servers are up and `db/schema.sql` is imp
 
 | Step | Action | Expected |
 |------|--------|----------|
-| 1 | Register student with `@stud.kuet.ac.bd` email | 201 Created |
-| 2 | Login with same credentials | 200 + `accessToken` |
-| 3 | Login with wrong password | 401 Unauthorized |
-| 4 | `GET /api/auth/me` with token | 200 + user object |
+| 1 | Register student with `@stud.kuet.ac.bd` email | 201 Created, role `student` |
+| 2 | Register librarian with `@kuet.ac.bd` email | 201 Created, role `librarian` |
+| 3 | Login with same credentials | 200 + `accessToken` |
+| 4 | Login with wrong password | 401 Unauthorized |
+| 5 | `GET /api/auth/me` with token | 200 + user object |
+| 6 | Logout | Refresh cookie cleared; FE returns to login |
 
 ## Book catalog (SSH-8)
 
@@ -23,7 +25,7 @@ Run after `backend` and `frontend` dev servers are up and `db/schema.sql` is imp
 |------|--------|----------|
 | 1 | Librarian adds book via Inventory UI | Book appears in catalog |
 | 2 | Student opens Book Catalog | Books load from `GET /api/books` |
-| 3 | Search/filter by title/category | Client-side filter works |
+| 3 | Search/filter by title/category/availability | Client-side filters work |
 
 ## Reservation workflow (SSH-12, SSH-14)
 
@@ -31,10 +33,11 @@ Run after `backend` and `frontend` dev servers are up and `db/schema.sql` is imp
 |------|--------|----------|
 | 1 | Student clicks **Reserve** on available book | 201, status `pending` |
 | 2 | Student opens **My Reservations** | Reservation listed |
-| 3 | Librarian opens **Reservation Panel** | All reservations visible |
-| 4 | Librarian **Approve** pending reservation | Status → `issued`, book qty decreases |
-| 5 | Librarian **Return** issued reservation | Status → `returned`, qty increases |
-| 6 | Librarian **Cancel** pending reservation | Status → `cancelled` |
+| 3 | Student **Cancel** a pending reservation | Status → `cancelled` |
+| 4 | Librarian opens **Reservation Panel** | All reservations visible |
+| 5 | Librarian **Approve** pending reservation | Status → `issued`, book qty decreases |
+| 6 | Librarian **Return** issued reservation | Status → `returned`, qty increases |
+| 7 | Librarian **Cancel** pending/issued reservation | Status → `cancelled` |
 
 ## Reading room (SSH-15)
 
@@ -43,6 +46,8 @@ Run after `backend` and `frontend` dev servers are up and `db/schema.sql` is imp
 | 1 | Student opens Reading Room | Seat grid loads |
 | 2 | Student takes available seat | Seat → `taken` |
 | 3 | Student frees own seat | Seat → `available` |
+| 4 | Librarian opens **Seating Monitor** | Occupied seats show student name/ID |
+| 5 | Librarian frees an occupied seat | Seat → `available` |
 
 ## API curl checks
 

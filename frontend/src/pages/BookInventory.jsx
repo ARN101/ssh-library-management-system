@@ -24,6 +24,7 @@ import {
   useUpdateBookMutation,
   useDeleteBookMutation,
 } from "../redux/features/book/bookApi.js";
+import { resolveCoverSrc } from "../utils/coverUrl.js";
 import { toast } from "sonner";
 
 const { Title, Text } = Typography;
@@ -56,6 +57,7 @@ const BookInventory = () => {
       isbn: record.isbn,
       category: record.category,
       quantity: record.quantity,
+      cover_url: record.cover_url,
     });
     setIsModalOpen(true);
   };
@@ -101,6 +103,38 @@ const BookInventory = () => {
 
   // Table columns
   const columns = [
+    {
+      title: "Cover",
+      dataIndex: "cover_url",
+      key: "cover_url",
+      width: 72,
+      render: (url, record) => {
+        const src = resolveCoverSrc(url);
+        return src ? (
+          <img
+            src={src}
+            alt={record.title}
+            style={{
+              width: 44,
+              height: 64,
+              objectFit: "cover",
+              borderRadius: 4,
+              border: "1px solid #f0f0f0",
+              background: "#f5f5f5",
+            }}
+            onError={(e) => {
+              e.currentTarget.src =
+                "data:image/svg+xml," +
+                encodeURIComponent(
+                  `<svg xmlns="http://www.w3.org/2000/svg" width="44" height="64"><rect fill="#1677ff" width="100%" height="100%"/></svg>`
+                );
+            }}
+          />
+        ) : (
+          <Text type="secondary">—</Text>
+        );
+      },
+    },
     {
       title: "Title",
       dataIndex: "title",
@@ -325,7 +359,7 @@ const BookInventory = () => {
             label="ISBN"
             name="isbn"
           >
-            <Input placeholder="e.g. 978-0-262-03384-8" />
+            <Input placeholder="e.g. 9780262033848" />
           </Form.Item>
 
           <Form.Item
@@ -333,6 +367,14 @@ const BookInventory = () => {
             name="category"
           >
             <Input placeholder="e.g. Computer Science" />
+          </Form.Item>
+
+          <Form.Item
+            label="Cover image URL"
+            name="cover_url"
+            extra="Optional. If empty and ISBN is set, Open Library cover is used."
+          >
+            <Input placeholder="https://covers.openlibrary.org/b/isbn/..." />
           </Form.Item>
 
           <Form.Item
