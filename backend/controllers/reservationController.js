@@ -148,6 +148,7 @@ const updateReservationStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
+    const actor = req.user;
 
     if (!status || !VALID_STATUSES.includes(status)) {
       return res.status(400).json({ message: 'Invalid status value' });
@@ -166,6 +167,31 @@ const updateReservationStatus = async (req, res) => {
     }
 
     const reservation = rows[0];
+
+    if (actor.role === 'student') {
+      if (status !== 'cancelled') {
+        await connection.rollback();
+        return res.status(403).json({
+          message: 'Students can only cancel their own pending reservations',
+        });
+      }
+      if (Number(reservation.user_id) !== Number(actor.id)) {
+        await connection.rollback();
+        return res.status(403).json({
+          message: 'You can only cancel your own reservations',
+        });
+      }
+      if (reservation.status !== 'pending') {
+        await connection.rollback();
+        return res.status(400).json({
+          message: 'Only pending reservations can be cancelled by students',
+        });
+      }
+    } else if (actor.role !== 'librarian') {
+      await connection.rollback();
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
     const allowed = VALID_TRANSITIONS[reservation.status] || [];
 
     if (!allowed.includes(status)) {
@@ -189,6 +215,18 @@ const updateReservationStatus = async (req, res) => {
     ]);
 
     await connection.commit();
+
+    if (actor.role === 'student') {
+      const [updated] = await db.query(
+        `${STUDENT_RESERVATION_SELECT} WHERE r.id = ?`,
+        [id]
+      );
+
+      return res.status(200).json({
+        message: `Reservation ${status} successfully`,
+        data: toStudentReservation(updated[0]),
+      });
+    }
 
     const [updated] = await db.query(
       `${LIBRARIAN_RESERVATION_SELECT} WHERE r.id = ?`,

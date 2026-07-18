@@ -14,14 +14,22 @@ const SALT_ROUNDS = 10;
 
 const isKuetEmail = (email) => KUET_EMAIL_REGEX.test(email);
 
+/** @stud.kuet.ac.bd → student; @kuet.ac.bd → librarian */
+const deriveRole = (email) => {
+  const lower = String(email).toLowerCase();
+  if (lower.endsWith('@stud.kuet.ac.bd')) return 'student';
+  if (lower.endsWith('@kuet.ac.bd')) return 'librarian';
+  return 'student';
+};
+
 const deriveStudentId = (email, studentId) => {
   if (studentId && String(studentId).trim()) {
-    return String(studentId).trim();
+    return String(studentId).trim().slice(0, 64);
   }
 
-  const localPart = email.split('@')[0];
-  const digits = localPart.match(/\d+/);
-  return digits ? digits[0] : localPart.slice(0, 15);
+  // Use full email local-part for uniqueness (column allows 64 chars)
+  const localPart = email.split('@')[0].toLowerCase().replace(/[^a-z0-9._+-]/g, '');
+  return localPart.slice(0, 64) || `u${Date.now()}`.slice(0, 64);
 };
 
 const buildTokenPayload = (user) => ({
@@ -49,6 +57,7 @@ const register = async (req, res) => {
     }
 
     const studentId = deriveStudentId(email, studentIdBody);
+    const role = deriveRole(email);
 
     const [existing] = await db.query(
       'SELECT id FROM users WHERE kuet_mail = ? OR student_id = ? LIMIT 1',
@@ -63,8 +72,8 @@ const register = async (req, res) => {
 
     const [result] = await db.query(
       `INSERT INTO users (kuet_mail, password_hash, full_name, student_id, role)
-       VALUES (?, ?, ?, ?, 'student')`,
-      [email.toLowerCase(), passwordHash, name.trim(), studentId]
+       VALUES (?, ?, ?, ?, ?)`,
+      [email.toLowerCase(), passwordHash, name.trim(), studentId, role]
     );
 
     return res.status(201).json({
@@ -75,7 +84,7 @@ const register = async (req, res) => {
           email: email.toLowerCase(),
           name: name.trim(),
           studentId,
-          role: 'student',
+          role,
         },
       },
     });

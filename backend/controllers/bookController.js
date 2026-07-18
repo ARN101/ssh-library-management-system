@@ -1,10 +1,13 @@
 const db = require('../config/db');
 const { toPublicBook } = require('../utils/bookMapper');
 
+const BOOK_COLUMNS =
+  'id, title, author, isbn, category, is_available, quantity, cover_url, created_at';
+
 const getAllBooks = async (req, res) => {
   try {
     const [rows] = await db.query(
-      'SELECT id, title, author, isbn, category, is_available, quantity, created_at FROM books ORDER BY title ASC'
+      `SELECT ${BOOK_COLUMNS} FROM books ORDER BY title ASC`
     );
 
     return res.status(200).json({
@@ -21,7 +24,7 @@ const getBookById = async (req, res) => {
     const { id } = req.params;
 
     const [rows] = await db.query(
-      'SELECT id, title, author, isbn, category, is_available, quantity, created_at FROM books WHERE id = ? LIMIT 1',
+      `SELECT ${BOOK_COLUMNS} FROM books WHERE id = ? LIMIT 1`,
       [id]
     );
 
@@ -40,7 +43,7 @@ const getBookById = async (req, res) => {
 
 const createBook = async (req, res) => {
   try {
-    const { title, author, isbn, category, quantity } = req.body;
+    const { title, author, isbn, category, quantity, cover_url: coverUrl } = req.body;
 
     if (!title || !author) {
       return res.status(400).json({ message: 'Title and author are required' });
@@ -48,15 +51,28 @@ const createBook = async (req, res) => {
 
     const qty = Number.isFinite(Number(quantity)) ? Math.max(0, Number(quantity)) : 1;
     const isAvailable = qty > 0;
+    const cleanIsbn = isbn?.trim() || null;
+    const digits = cleanIsbn ? cleanIsbn.replace(/-/g, '') : null;
+    let cover =
+      (coverUrl && String(coverUrl).trim()) ||
+      (digits ? `/covers/${digits}.jpg` : null);
 
     const [result] = await db.query(
-      `INSERT INTO books (title, author, isbn, category, quantity, is_available)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [title.trim(), author.trim(), isbn?.trim() || null, category?.trim() || null, qty, isAvailable]
+      `INSERT INTO books (title, author, isbn, category, quantity, is_available, cover_url)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        title.trim(),
+        author.trim(),
+        cleanIsbn,
+        category?.trim() || null,
+        qty,
+        isAvailable,
+        cover,
+      ]
     );
 
     const [rows] = await db.query(
-      'SELECT id, title, author, isbn, category, is_available, quantity, created_at FROM books WHERE id = ?',
+      `SELECT ${BOOK_COLUMNS} FROM books WHERE id = ?`,
       [result.insertId]
     );
 
@@ -76,7 +92,7 @@ const createBook = async (req, res) => {
 const updateBook = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, author, isbn, category, quantity } = req.body;
+    const { title, author, isbn, category, quantity, cover_url: coverUrl } = req.body;
 
     const [existing] = await db.query('SELECT id FROM books WHERE id = ? LIMIT 1', [id]);
 
@@ -90,16 +106,30 @@ const updateBook = async (req, res) => {
 
     const qty = Number.isFinite(Number(quantity)) ? Math.max(0, Number(quantity)) : 0;
     const isAvailable = qty > 0;
+    const cleanIsbn = isbn?.trim() || null;
+    const digits = cleanIsbn ? cleanIsbn.replace(/-/g, '') : null;
+    let cover =
+      (coverUrl && String(coverUrl).trim()) ||
+      (digits ? `/covers/${digits}.jpg` : null);
 
     await db.query(
       `UPDATE books
-       SET title = ?, author = ?, isbn = ?, category = ?, quantity = ?, is_available = ?
+       SET title = ?, author = ?, isbn = ?, category = ?, quantity = ?, is_available = ?, cover_url = ?
        WHERE id = ?`,
-      [title.trim(), author.trim(), isbn?.trim() || null, category?.trim() || null, qty, isAvailable, id]
+      [
+        title.trim(),
+        author.trim(),
+        cleanIsbn,
+        category?.trim() || null,
+        qty,
+        isAvailable,
+        cover,
+        id,
+      ]
     );
 
     const [rows] = await db.query(
-      'SELECT id, title, author, isbn, category, is_available, quantity, created_at FROM books WHERE id = ?',
+      `SELECT ${BOOK_COLUMNS} FROM books WHERE id = ?`,
       [id]
     );
 

@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "smoke-test": "node scripts/smoke-test.js"
+    "smoke-test": "node scripts/smoke-test.js",
+    "seed-books": "node scripts/seed-books.js",
+    "download-covers": "node scripts/download-covers.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

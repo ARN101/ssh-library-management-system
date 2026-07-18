@@ -4,9 +4,8 @@ import { adminPaths } from "./Admin.routes.jsx";
 import { studentPaths } from "./Student.routes.jsx";
 import Login from "../pages/Login.jsx";
 import Register from "../pages/Register.jsx";
-import BookCatalog from "../pages/BookCatalog.jsx";
-import BookInventory from "../pages/BookInventory.jsx";
 import MainLayout from "../components/layout/MainLayout.jsx";
+import ProtectedRoute from "../components/layout/ProtectedRoute.jsx";
 import { routeGenerator } from "../utils/routesGenerator.js";
 import NotFound from "../pages/NotFound.jsx";
 
@@ -18,13 +17,21 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin",
-    element: <App />,
+    element: (
+      <ProtectedRoute allowedRoles={["librarian"]}>
+        <MainLayout />
+      </ProtectedRoute>
+    ),
     errorElement: <NotFound />,
     children: routeGenerator(adminPaths),
   },
   {
     path: "/student",
-    element: <App />,
+    element: (
+      <ProtectedRoute allowedRoles={["student"]}>
+        <MainLayout />
+      </ProtectedRoute>
+    ),
     errorElement: <NotFound />,
     children: routeGenerator(studentPaths),
   },
@@ -35,20 +42,6 @@ const router = createBrowserRouter([
   {
     path: "/register",
     element: <Register />,
-  },
-  {
-    path: "/preview",
-    element: <MainLayout />,
-    children: [
-      {
-        path: "book-catalog",
-        element: <BookCatalog />,
-      },
-      {
-        path: "book-inventory",
-        element: <BookInventory />,
-      },
-    ],
   },
   {
     path: "*",

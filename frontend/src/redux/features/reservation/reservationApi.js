@@ -30,7 +30,7 @@ export const reservationApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: { status },
       }),
-      invalidatesTags: ["reservations"],
+      invalidatesTags: ["reservations", "books"],
     }),
   }),
 });

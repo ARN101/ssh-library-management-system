@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     kuet_mail VARCHAR(100) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     full_name VARCHAR(100) NOT NULL,
-    student_id VARCHAR(15) NOT NULL UNIQUE,
+    student_id VARCHAR(64) NOT NULL UNIQUE,
     role ENUM('student', 'librarian') DEFAULT 'student',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -19,10 +19,11 @@ CREATE TABLE IF NOT EXISTS books (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     author VARCHAR(255) NOT NULL,
-    isbn VARCHAR(20) UNIQUE,
+    isbn VARCHAR(32) UNIQUE,
     category VARCHAR(100),
     is_available BOOLEAN DEFAULT TRUE,
     quantity INT DEFAULT 1,
+    cover_url VARCHAR(500) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -49,8 +50,17 @@ CREATE TABLE IF NOT EXISTS seats (
 
 -- Insert demo librarian user (password: admin123)
 INSERT INTO users (kuet_mail, password_hash, full_name, student_id, role)
-VALUES ('librarian@kuet.ac.bd', '$2b$10$wB50.7cRz1r2Z6t.8P2YI.rM/sLd2vM.F8v8Lw0rF2n1J4Yp2y5m.', 'SSH Librarian', '0000000', 'librarian')
-ON DUPLICATE KEY UPDATE id=id;
+VALUES (
+  'librarian@kuet.ac.bd',
+  '$2b$10$7LpQjbDZSd3zs7B6egKEWOtmbHRSo7Iv0dfBcmUp2vruo8bB8OJNS',
+  'SSH Librarian',
+  '0000000',
+  'librarian'
+)
+ON DUPLICATE KEY UPDATE
+  password_hash = VALUES(password_hash),
+  full_name = VALUES(full_name),
+  role = VALUES(role);
 
 -- Generate initial reading room seats if they don't exist
 INSERT IGNORE INTO seats (seat_number) VALUES
